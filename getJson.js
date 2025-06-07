@@ -13,10 +13,10 @@
   }
 
   var spreadsheets = [
-    {name: 'QuestionTypesSpreadsheet', url: 'https://spreadsheets.google.com/feeds/cells/1to58wg_r4R_oie7IqYPzsqMglIKkDYCh4peNhCZ6xm4/1/public/values?alt=json-in-script'},
-    {name: 'AnswersSpreadsheet', url: 'https://spreadsheets.google.com/feeds/cells/1to58wg_r4R_oie7IqYPzsqMglIKkDYCh4peNhCZ6xm4/2/public/values?alt=json-in-script'},
-    {name: 'QuestionsSpreadsheet', url: 'https://spreadsheets.google.com/feeds/cells/1to58wg_r4R_oie7IqYPzsqMglIKkDYCh4peNhCZ6xm4/3/public/values?alt=json-in-script'},
-    {name: 'ChoicesSpreadsheet', url: 'https://spreadsheets.google.com/feeds/cells/1to58wg_r4R_oie7IqYPzsqMglIKkDYCh4peNhCZ6xm4/4/public/values?alt=json-in-script'}
+    {name: 'QuestionTypesSpreadsheet', url: 'https://spreadsheets.google.com/feeds/cells/13sAxo8wG3VxHgjSNayT0qqLUKpypYRa3AeAY2OWPl1g/1/public/values?alt=json-in-script'},
+    {name: 'AnswersSpreadsheet', url: 'https://spreadsheets.google.com/feeds/cells/13sAxo8wG3VxHgjSNayT0qqLUKpypYRa3AeAY2OWPl1g/2/public/values?alt=json-in-script'},
+    {name: 'QuestionsSpreadsheet', url: 'https://spreadsheets.google.com/feeds/cells/13sAxo8wG3VxHgjSNayT0qqLUKpypYRa3AeAY2OWPl1g/3/public/values?alt=json-in-script'},
+    {name: 'ChoicesSpreadsheet', url: 'https://spreadsheets.google.com/feeds/cells/13sAxo8wG3VxHgjSNayT0qqLUKpypYRa3AeAY2OWPl1g/4/public/values?alt=json-in-script'}
   ];
 
   var jsontoString = function() {
