@@ -2,14 +2,28 @@
   display: none;
 }
 
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
 #quiz-header{
   font-size: 2em;
   margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  color: #004AAD; /* Default text color for header */
 }
 
+#company-logo {
+  max-height: 50px; /* Adjust as needed */
+  margin-right: 15px;
+  vertical-align: middle; /* Helps align with text if it's next to it */
+}
+
+/* .black class was not present, color set on #quiz-header. .red is for the "QUIZ" part. */
 #quiz-header .red{
   font-style: italic;
-  color: #BE1E3A;
+  color: #004AAD; /* Was #BE1E3A */
 }
 
 .header-underline{
@@ -31,7 +45,7 @@
 
 #choices{
   margin-top: 10px;
-  border: 1px solid #DFDFDF;
+  border: 1px solid #63B7D8; /* Was #DFDFDF */
 }
 
 #choices .choice input{
@@ -41,18 +55,24 @@
 #choices .choice{
   display: block;
   margin: 0;
-  background-color: #F1F1F1;
+  background-color: #E0F2F7; /* Lighter tint of #63B7D8 for base */
+  color: #000; /* Ensure text is readable */
   font-size: 1.2em;
   font-weight: 400;
   padding: 15px;
+  border-bottom: 1px solid #63B7D8; /* Use main light blue for separation */
+}
+
+#choices .choice:last-child {
+  border-bottom: none; /* Remove border for the last choice item */
 }
 
 #choices .choice:nth-of-type(even){
-  background-color: #FAFAFA;
+  background-color: #CDEAF4; /* Slightly different tint for alternating rows */
 }
 
 #choices .choice:hover{
-  background-color: #DEDEDE;
+  background-color: #A8DDEE; /* Darker tint for hover */
 }
 
 .choice-radio-button, .choice-text{
@@ -71,7 +91,7 @@
 }
 
 #results-container .heading{
-  color: #be1f3b;
+  color: #004AAD; /* Was #be1f3b */
   margin-top: 0px;
   margin-bottom: 30px;
 }
@@ -85,21 +105,24 @@
 }
 
 .btn.btn-red {
-  color: #FFF;
-  background-color: #D9534F;
+  color: #FFFFFF; /* White text for good contrast on green */
+  background-color: #5AB587; /* Was #D9534F */
   font-size: 1.2em;
   height: 40px;
-  width: 80px;
+  width: 80px; /* Default width */
   margin-bottom: 3px;
+  border: none; /* Remove default border if any */
+  border-radius: 4px; /* Add some rounded corners */
 }
 
+.btn.btn-red:hover {
+  background-color: #47A374; /* Darker green for hover */
+}
+
+/* Keep specific width settings where they were */
 .btn.btn-red.btn-results, .btn.btn-red.btn-next-on-confirm-page{
   margin-top: 10px;
   margin-left: 45px;
-}
-
-.btn.btn-red:hover{
-  background-color: #BE1F3B;
 }
 
 .btn.btn-red.btn-results{
@@ -107,17 +130,17 @@
 }
 
 #share-screen-back{
-  color: #D9534F;
+  color: #004AAD; /* Dark blue for links */
 }
 
 #share-screen-back:hover{
-  color: #BE1F3B;
+  color: #002A6B; /* Darker blue for hover */
 }
 
 .jumbotron {
-  background-color: rgba(249, 249, 249, 0.63);
-  border: 1px solid rgba(249, 249, 249, 0.8);
-  color: rgba(0, 0, 0, 0.6);
+  background-color: #E0F2F7; /* Lighter tint of #63B7D8 */
+  border: 1px solid #63B7D8;
+  color: #002233; /* Darker blue for text readability on light blue bg */
   margin-bottom: 20px;
   padding: 48px;
 }
@@ -160,7 +183,7 @@
 }
 
 .cta-red{
-  color: #be1f3b;
+  color: #5AB587; /* Was #be1f3b */
 }
 
 .cta-text-section{
@@ -170,11 +193,11 @@
 }
 
 .multunus-link{
-  color: #be1f3b;
+  color: #004AAD; /* Dark blue */
 }
 
 .multunus-link:hover{
-  color: #D9534F;
+  color: #002A6B; /* Darker blue for hover */
 }
 
 .fb-share-section{
