@@ -35,7 +35,7 @@ var FetchedJsonData = {
     { "id": "Q8", "text": "Which school subject or activity do/did you enjoy the most?", "questionTypeId": "INTEREST" }
   ],
   "ChoicesSpreadsheet": [
-    // ... choices omitted for brevity, same as before ...
+    // full choice entries here
   ],
   "QuestionTypesSpreadsheet": [
     { "id": "ENVIRONMENT", "text": "Preferred work setting/environment" },
@@ -79,15 +79,16 @@ var QuizRunner = {
     return _.find(list, function(o) { return o.id === elementId; });
   },
 
-  fillQuestionContainer: function(questionId) {
-    var question = QuizRunner.getElementFromListById(EngineNameSpace.listOfQuestions, questionId);
+  fillQuestionContainer: function(questionIndex) {
+    var question = EngineNameSpace.listOfQuestions[questionIndex];
+    var qid = question.id;
     $('#question-text').text(question.text);
-    $('#quiz-status').text('QUESTION ' + questionId + '/' + EngineNameSpace.listOfQuestions.length);
-    var choices = QuizRunner.shuffle(QuizRunner.getChoicesForQuestion(questionId));
+    $('#quiz-status').text('QUESTION ' + (questionIndex+1) + '/' + EngineNameSpace.listOfQuestions.length);
+    var choices = QuizRunner.shuffle(QuizRunner.getChoicesForQuestion(qid));
     $('#choices').empty();
     _.each(choices, function(choice) {
       $("#choices").append(
-        QuizRunner.getRadioOptionContainer(choice.questionId, choice.id, choice.text)
+        QuizRunner.getRadioOptionContainer(qid, choice.id, choice.text)
       );
     });
   },
@@ -98,11 +99,12 @@ var QuizRunner = {
   },
 
   showNextQuestion: function() {
-    if (EngineNameSpace.currentQuestion < EngineNameSpace.listOfQuestions.length) {
+    var idx = EngineNameSpace.currentQuestion;
+    if (idx < EngineNameSpace.listOfQuestions.length) {
       $('.screen').hide();
       $('#quiz-container').show();
-      EngineNameSpace.currentQuestion += 1;
-      QuizRunner.fillQuestionContainer(EngineNameSpace.currentQuestion.toString());
+      QuizRunner.fillQuestionContainer(idx);
+      EngineNameSpace.currentQuestion++;
     } else {
       $('.screen').hide();
       QuizRunner.displayResults();
@@ -142,6 +144,7 @@ var QuizRunner = {
 
   shuffle: function(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
+
     while (currentIndex !== 0) {
       randomIndex = Math.floor(Math.random() * currentIndex);
       currentIndex -= 1;
