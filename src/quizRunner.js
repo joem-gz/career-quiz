@@ -1,6 +1,6 @@
-// quizRunner.js
+// src/quizRunner.js
 
-// Engine Namespace
+// Engine namespace holds all of our lists + state
 var EngineNameSpace = {
   listOfQuestionTypes: [],
   listOfQuestions:     [],
@@ -11,49 +11,55 @@ var EngineNameSpace = {
 };
 
 var QuizRunner = {
-  getRadioOptionContainer: function(name, value, text) {
-    return "<label class='choice'>" +
-             "<div class='choice-radio-button'>" +
-               "<input type='radio' value='" + value + "' name='" + name + "'>" +
-             "</div>" +
-             "<div class='choice-text'>" + text + "</div>" +
-           "</label>";
+  // Build a single radio option
+  getRadioOptionContainer(name, value, text) {
+    return  "<label class='choice'>" +
+              "<div class='choice-radio-button'>" +
+                "<input type='radio' name='"+ name +"' value='"+ value +"'>" +
+              "</div>" +
+              "<div class='choice-text'>"+ text +"</div>" +
+            "</label>";
   },
 
-  getChoicesForQuestion: function(questionId) {
-    return _.filter(EngineNameSpace.listOfChoices, function(choice) {
-      return choice.questionId === questionId;
-    });
+  // Grab only the choices for a given question
+  getChoicesForQuestion(questionId) {
+    return _.filter(EngineNameSpace.listOfChoices, c => c.questionId === questionId);
   },
 
-  getElementFromListById: function(list, elementId) {
-    return _.find(list, function(o) { return o.id === elementId; });
+  // Find any object in one of our lists by its `id`
+  getElementFromListById(list, elementId) {
+    return _.find(list, item => item.id === elementId);
   },
 
-  fillQuestionContainer: function(questionIndex) {
+  // Render question #n
+  fillQuestionContainer(questionIndex) {
+    // questions are zero-based internally
     var q = EngineNameSpace.listOfQuestions[questionIndex - 1];
     $('#question-text').text(q.text);
-    $('#quiz-status').text('QUESTION ' + questionIndex + '/' + EngineNameSpace.listOfQuestions.length);
+    $('#quiz-status').text(`QUESTION ${questionIndex}/${EngineNameSpace.listOfQuestions.length}`);
 
-    var choices = QuizRunner.shuffle(QuizRunner.getChoicesForQuestion(q.id));
+    // shuffle and render its choices
+    var choices = QuizRunner.shuffle( this.getChoicesForQuestion(q.id) );
     $('#choices').empty();
-    _.each(choices, function(choice) {
+    _.each(choices, choice => {
       $('#choices').append(
         QuizRunner.getRadioOptionContainer(choice.questionId, choice.id, choice.text)
       );
     });
   },
 
-  pushChosenChoice: function(choiceId) {
-    var choice = QuizRunner.getElementFromListById(EngineNameSpace.listOfChoices, choiceId);
+  // Record the user’s pick
+  pushChosenChoice(choiceId) {
+    const choice = QuizRunner.getElementFromListById(EngineNameSpace.listOfChoices, choiceId);
     EngineNameSpace.listOfChosenChoices.push(choice);
   },
 
-  showNextQuestion: function() {
+  // Advance or finish
+  showNextQuestion() {
     if (EngineNameSpace.currentQuestion < EngineNameSpace.listOfQuestions.length) {
       $('.screen').hide();
       $('#quiz-container').show();
-      EngineNameSpace.currentQuestion += 1;
+      EngineNameSpace.currentQuestion++;
       QuizRunner.fillQuestionContainer(EngineNameSpace.currentQuestion);
     } else {
       $('.screen').hide();
@@ -62,45 +68,43 @@ var QuizRunner = {
     }
   },
 
-  groupChoicesByQuestionTypes: function() {
-    return _.groupBy(EngineNameSpace.listOfChosenChoices, function(c) {
-      return c.questionTypeId;
-    });
+  // Group choices first by questionType, then by answer
+  groupChoicesByQuestionTypes() {
+    return _.groupBy(EngineNameSpace.listOfChosenChoices, c => c.questionTypeId);
+  },
+  groupChoicesByAnswers(choices) {
+    return _.groupBy(choices, c => c.answerId);
   },
 
-  groupChoicesByAnswers: function(choices) {
-    return _.groupBy(choices, function(c) {
-      return c.answerId;
-    });
+  // Pick the answer with the highest count
+  findMostSuitableAnswer(grouped) {
+    const counts = _.map(grouped, (vals, key) => ({
+      answerId: key,
+      numberOfElements: vals.length
+    }));
+    return _.max(counts, a => a.numberOfElements).answerId;
   },
 
-  findMostSuitableAnswer: function(groupByAnswers) {
-    var counts = _.map(groupByAnswers, function(vals, key) {
-      return { answerId: key, numberOfElements: vals.length };
-    });
-    return _.max(counts, function(a) { return a.numberOfElements; }).answerId;
-  },
-
-  displayResults: function() {
-    var byType = QuizRunner.groupChoicesByQuestionTypes();
-    _.each(byType, function(choices, typeId) {
-      var byAnswer = QuizRunner.groupChoicesByAnswers(choices);
-      var bestAnswerId = QuizRunner.findMostSuitableAnswer(byAnswer);
-      var answer = QuizRunner.getElementFromListById(EngineNameSpace.listOfAnswers, bestAnswerId);
+  // Show the final results
+  displayResults() {
+    const byType = QuizRunner.groupChoicesByQuestionTypes();
+    _.each(byType, choicesForType => {
+      const byAnswer = QuizRunner.groupChoicesByAnswers(choicesForType);
+      const bestAnswerId = QuizRunner.findMostSuitableAnswer(byAnswer);
+      const answer = QuizRunner.getElementFromListById(EngineNameSpace.listOfAnswers, bestAnswerId);
       $('#results-section').append(
-        $("<li>").addClass('result').html("<span class='answer-text'>" + answer.text + "</span>")
+        `<li class="result"><span class="answer-text">${answer.text}</span></li>`
       );
     });
   },
 
-  shuffle: function(array) {
-    var i = array.length, t, j;
-    while (i) {
-      j = Math.floor(Math.random() * i--);
-      t = array[i];
-      array[i] = array[j];
-      array[j] = t;
+  // Simple Fisher–Yates shuffle
+  shuffle(arr) {
+    var a = arr.slice(), m = a.length, t, i;
+    while (m) {
+      i = Math.floor(Math.random() * m--);
+      t = a[m]; a[m] = a[i]; a[i] = t;
     }
-    return array;
+    return a;
   }
 };

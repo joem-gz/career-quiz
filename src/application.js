@@ -1,46 +1,56 @@
-// application.js
+// src/application.js
+
+// On DOM ready: map CSV‐based FetchedJsonData into model objects and start quiz
 $(document).ready(function(){
+  // Question Types
+  EngineNameSpace.listOfQuestionTypes = FetchedJsonData
+    .QuestionTypesSpreadsheet
+    .map(item => new QuestionType({
+      id:   item.id,
+      text: item.text
+    }));
 
-  // 1) map each CSV-row object into its model
-  EngineNameSpace.listOfQuestionTypes = FetchedJsonData.QuestionTypesSpreadsheet.map(function(item){
-    return new QuestionType({ id: item.id, text: item.text });
-  });
+  // Answers
+  EngineNameSpace.listOfAnswers = FetchedJsonData
+    .AnswersSpreadsheet
+    .map(item => new Answer({
+      id:   item.id,
+      text: item.text
+    }));
 
-  EngineNameSpace.listOfAnswers = FetchedJsonData.AnswersSpreadsheet.map(function(item){
-    return new Answer({ id: item.id, text: item.text });
-  });
-
-  EngineNameSpace.listOfQuestions = FetchedJsonData.QuestionsSpreadsheet.map(function(item){
-    return new Question({
-      id: item.id,
-      text: item.text,
+  // Questions
+  EngineNameSpace.listOfQuestions = FetchedJsonData
+    .QuestionsSpreadsheet
+    .map(item => new Question({
+      id:             item.id,
+      text:           item.text,
       questionTypeId: item.questionTypeId
-    });
-  });
+    }));
 
-  EngineNameSpace.listOfChoices = FetchedJsonData.ChoicesSpreadsheet.map(function(item){
-    return new Choice({
+  // Choices
+  EngineNameSpace.listOfChoices = FetchedJsonData
+    .ChoicesSpreadsheet
+    .map(item => new Choice({
       id:             item.id,
       questionId:     item.questionId,
       text:           item.text,
       answerId:       item.answerId,
       questionTypeId: item.questionTypeId
-    });
-  });
+    }));
 
-  // 2) start the quiz
+  // Kick off
   EngineNameSpace.currentQuestion = 0;
   QuizRunner.showNextQuestion();
 
-  // 3) handle the “Next” button
-  $('#submit-choice').click(function(event){
-    event.preventDefault();
-    var $checked = $('#questionnaire input[type=radio]:checked');
-    if (!$checked.length) {
+  // Submit handler
+  $('#submit-choice').click(function(e){
+    e.preventDefault();
+    const checked = $('#questionnaire input[type=radio]:checked');
+    if (!checked.length) {
       $('#error-field').show();
     } else {
       $('#error-field').hide();
-      QuizRunner.pushChosenChoice($checked.val());
+      QuizRunner.pushChosenChoice( checked.val() );
       QuizRunner.showNextQuestion();
     }
   });
