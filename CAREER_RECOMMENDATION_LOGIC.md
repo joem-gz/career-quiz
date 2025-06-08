@@ -1,6 +1,6 @@
 # Career Recommendation Logic
 
-This document explains how the Software Career Quiz determines which careers to recommend to the user based on their answers.
+This document explains how the Green Career Quiz determines which careers to recommend to the user based on their answers.
 
 The core logic resides in the `src/quizRunner.js` file, specifically within the `displayResults` function and its helpers. Here's a step-by-step breakdown:
 
