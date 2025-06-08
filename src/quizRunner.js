@@ -6,14 +6,14 @@ QuizRunner = {
     return _.filter(EngineNameSpace.listOfChoices, function(choice){ if ( choice.questionId == questionId ) { return choice;} });
   },
   getElementFromListById: function(list, elementId){
-    return _.find(list, function(q){ if ( q.pid == elementId ) { return q; }});
+    return _.find(list, function(q){ if ( q.id == elementId ) { return q; }});
   },
   fillQuestionContainer: function(questionId){
-    $('#question-text').text(QuizRunner.getElementFromListById(EngineNameSpace['listOfQuestions'], questionId).questionText);
+    $('#question-text').text(QuizRunner.getElementFromListById(EngineNameSpace['listOfQuestions'], questionId).text);
     $('#quiz-status').text('QUESTION ' + questionId + '/' + EngineNameSpace.listOfQuestions.length.toString());
     var choices = QuizRunner.shuffle(QuizRunner.getChoicesForQuestion(questionId));
     $('#choices').empty();
-    _.each(choices, function(choice){ $("#choices").append(QuizRunner.getRadioOptionContainer(choice.questionId, choice.pid, choice.choiceText))})
+    _.each(choices, function(choice){ $("#choices").append(QuizRunner.getRadioOptionContainer(choice.questionId, choice.id, choice.text))})
   },
   pushChosenChoice : function(choiceId){
     var choice = QuizRunner.getElementFromListById(EngineNameSpace['listOfChoices'], choiceId);
@@ -51,8 +51,8 @@ QuizRunner = {
     return (_.max(answerCounts, function(answer){ return answer.numberOfElements})).answerId;
   },
   updateRoleOnConfirmationScreen: function(chosenAnswer){
-    if(chosenAnswer.pid < 5){
-      $("#role-text").text(chosenAnswer.answerName);
+    if(chosenAnswer.id < 5){
+      $("#role-text").text(chosenAnswer.text);
     }
   },
   displayResults: function(){
@@ -62,7 +62,7 @@ QuizRunner = {
       var groupByAnswers = QuizRunner.groupChoicesByAnswers(value);
       var chosenAnswerId = QuizRunner.findMostSuitableAnswer(groupByAnswers);
       var chosenAnswer = QuizRunner.getElementFromListById(EngineNameSpace.listOfAnswers, chosenAnswerId);
-      var answerElement = "<span class='answer-text'>" + chosenAnswer.answerText + "</span>";
+      var answerElement = "<span class='answer-text'>" + chosenAnswer.text + "</span>";
       result.append(answerElement);
       $("#results-section").append(result);
       QuizRunner.updateRoleOnConfirmationScreen(chosenAnswer);
