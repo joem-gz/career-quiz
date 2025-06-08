@@ -12,7 +12,8 @@
     "email": "santu.m@multunus.com"
   },
   "devDependencies": {
-    "gulp": "3.8.10",
+    "gulp": "^4.0.0",
+    "gulp-cli": "^2.3.0",
     "gulp-run": "*",
     "gulp-concat": "2.4.3",
     "request-promise": "*"
