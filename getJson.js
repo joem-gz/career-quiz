@@ -1,70 +1,64 @@
-(function() {
-  'use strict';
+'use strict';
 
-  var rp = require('request-promise');
-  var fs = require('fs');
-  var _und = require("./lib/underscore/underscore-min");
+const rp    = require('request-promise');
+const { parse } = require('csv-parse/sync');   // ← destructure so parse is the fn
+const fs    = require('fs');
+const path  = require('path');
 
-  var FetchedJsonData = {
-    'QuestionTypesSpreadsheet': null,
-    'QuestionsSpreadsheet': null,
-    'ChoicesSpreadsheet': null,
-    'AnswersSpreadsheet': null
+// 1) Your spreadsheet ID:
+const SPREADSHEET_ID = '13sAxo8wG3VxHgjSNayT0qqLUKpypYRa3AeAY2OWPl1g';
+
+// 2) Tabs + their GIDs (in order: questionTypes, answers, questions, choices)
+const spreadsheets = [
+  {
+    name: 'QuestionTypesSpreadsheet',
+    url: `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=1541233227`
+  },
+  {
+    name: 'AnswersSpreadsheet',
+    url: `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=1129464320`
+  },
+  {
+    name: 'QuestionsSpreadsheet',
+    url: `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=13606149`
+  },
+  {
+    name: 'ChoicesSpreadsheet',
+    url: `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=1332666698`
   }
+];
 
-  var spreadsheets = [
-    {name: 'QuestionTypesSpreadsheet', url: 'https://spreadsheets.google.com/feeds/cells/13sAxo8wG3VxHgjSNayT0qqLUKpypYRa3AeAY2OWPl1g/1/public/values?alt=json-in-script'},
-    {name: 'AnswersSpreadsheet', url: 'https://spreadsheets.google.com/feeds/cells/13sAxo8wG3VxHgjSNayT0qqLUKpypYRa3AeAY2OWPl1g/2/public/values?alt=json-in-script'},
-    {name: 'QuestionsSpreadsheet', url: 'https://spreadsheets.google.com/feeds/cells/13sAxo8wG3VxHgjSNayT0qqLUKpypYRa3AeAY2OWPl1g/3/public/values?alt=json-in-script'},
-    {name: 'ChoicesSpreadsheet', url: 'https://spreadsheets.google.com/feeds/cells/13sAxo8wG3VxHgjSNayT0qqLUKpypYRa3AeAY2OWPl1g/4/public/values?alt=json-in-script'}
-  ];
+// will hold each sheet’s parsed rows
+const FetchedJsonData = {};
 
-  var jsontoString = function() {
-    var returnString = "var FetchedJsonData = {\n";
-    for (var key in FetchedJsonData){
-      returnString += "  " + key + ": ";
-      returnString += FetchedJsonData[key] + ",\n";
-    }
-    returnString += "};";
-    return returnString;
-  }
-
-  var file = __dirname + '/src/fetchedJsonData.js';
-
-  var getDataForQuestionnaire = function(body){
-    var startPosition = body.indexOf('entry') + 7;
-    var endPosition = body.length - 4;
-    return body.substring(startPosition, endPosition);
-  };
-
-  var resetFile = function(file){
-    fs.writeFile(file, '', function(err) {
-      if (err) console.log(err);
+function fetchSheet(sheet) {
+  console.log(`[DEBUG] Fetching ${sheet.name} as CSV…`);
+  return rp(sheet.url)
+    .then(csvText => {
+      // now parse is a function, so this works:
+      const rows = parse(csvText, { columns: true, skip_empty_lines: true });
+      FetchedJsonData[sheet.name] = rows;
+      console.log(`[DEBUG] ${sheet.name}: ${rows.length} rows`);
+    })
+    .catch(err => {
+      console.error(`[ERROR] ${sheet.name} failed:`, err.message);
+      throw err;
     });
-  };
+}
 
-  var appendToFile = function(file, data){
-    fs.appendFile(file, data, function(err) {
-      if(err) console.log(err);
-    });
-  };
-
-  var getJsonAndUpdate = function(file, spreadsheet){
-    rp(spreadsheet.url)
-      .then(function(resp) {
-        var data = getDataForQuestionnaire(resp);
-        FetchedJsonData[spreadsheet.name] = data;
-      })
-      .then(function(){
-        if(_und.contains(_und.values(FetchedJsonData), null) == false){
-          resetFile(file);
-          appendToFile(file, jsontoString());
-        }
-      })
-      .catch(console.error);
-  };
-
-  spreadsheets.forEach(function(spreadsheet){
-    getJsonAndUpdate(file, spreadsheet);
+// fetch all sheets in parallel
+Promise.all(spreadsheets.map(fetchSheet))
+  .then(() => {
+    const outputPath = path.join(__dirname, 'src', 'fetchedJsonData.js');
+    const fileContent =
+      'var FetchedJsonData = ' +
+      JSON.stringify(FetchedJsonData, null, 2) +
+      ';\n';
+    fs.writeFileSync(outputPath, fileContent, 'utf8');
+    console.log(`[DEBUG] All CSVs fetched; file written to ${outputPath}`);
+    process.exit(0);
+  })
+  .catch(err => {
+    console.error('[ERROR] Failed to fetch one or more sheets:', err.message);
+    process.exit(1);
   });
-})();
