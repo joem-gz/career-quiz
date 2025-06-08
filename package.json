@@ -5,16 +5,24 @@
   "homepage": "http://multunus.github.io/career-quiz",
   "repository": {
     "type": "git",
-    "url": "https://github.com/multunus/career-quiz"
+    "url": "git+https://github.com/multunus/career-quiz.git"
   },
-  "author": {
-    "name": "Santu Mahapatra",
-    "email": "santu.m@multunus.com"
-  },
+  "author": "Santu Mahapatra <santu.m@multunus.com>",
   "devDependencies": {
-    "gulp": "3.8.10",
-    "gulp-run": "*",
+    "gulp": "^3.8.10",
     "gulp-concat": "2.4.3",
+    "gulp-run": "*",
     "request-promise": "*"
+  },
+  "main": "getJson.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/multunus/career-quiz/issues"
   }
 }
