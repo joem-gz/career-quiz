@@ -1,90 +1,106 @@
-QuizRunner = {
-  getRadioOptionContainer: function(name, value, text){
-    return "<label class='choice'><div class='choice-radio-button'><input type='radio' value='" + value + "' name='" + name + "'></div><div class='choice-text'>" + text + "</div></label>";
+// quizRunner.js
+
+// Engine Namespace
+var EngineNameSpace = {
+  listOfQuestionTypes: [],
+  listOfQuestions:     [],
+  listOfChoices:       [],
+  listOfAnswers:       [],
+  listOfChosenChoices: [],
+  currentQuestion:     0
+};
+
+var QuizRunner = {
+  getRadioOptionContainer: function(name, value, text) {
+    return "<label class='choice'>" +
+             "<div class='choice-radio-button'>" +
+               "<input type='radio' value='" + value + "' name='" + name + "'>" +
+             "</div>" +
+             "<div class='choice-text'>" + text + "</div>" +
+           "</label>";
   },
-  getChoicesForQuestion: function(questionId){
-    return _.filter(EngineNameSpace.listOfChoices, function(choice){ if ( choice.questionId == questionId ) { return choice;} });
+
+  getChoicesForQuestion: function(questionId) {
+    return _.filter(EngineNameSpace.listOfChoices, function(choice) {
+      return choice.questionId === questionId;
+    });
   },
-  getElementFromListById: function(list, elementId){
-    return _.find(list, function(q){ if ( q.id == elementId ) { return q; }});
+
+  getElementFromListById: function(list, elementId) {
+    return _.find(list, function(o) { return o.id === elementId; });
   },
-  fillQuestionContainer: function(questionId){
-    $('#question-text').text(QuizRunner.getElementFromListById(EngineNameSpace['listOfQuestions'], questionId).text);
-    $('#quiz-status').text('QUESTION ' + questionId + '/' + EngineNameSpace.listOfQuestions.length.toString());
-    var choices = QuizRunner.shuffle(QuizRunner.getChoicesForQuestion(questionId));
+
+  fillQuestionContainer: function(questionIndex) {
+    var q = EngineNameSpace.listOfQuestions[questionIndex - 1];
+    $('#question-text').text(q.text);
+    $('#quiz-status').text('QUESTION ' + questionIndex + '/' + EngineNameSpace.listOfQuestions.length);
+
+    var choices = QuizRunner.shuffle(QuizRunner.getChoicesForQuestion(q.id));
     $('#choices').empty();
-    _.each(choices, function(choice){ $("#choices").append(QuizRunner.getRadioOptionContainer(choice.questionId, choice.id, choice.text))})
+    _.each(choices, function(choice) {
+      $('#choices').append(
+        QuizRunner.getRadioOptionContainer(choice.questionId, choice.id, choice.text)
+      );
+    });
   },
-  pushChosenChoice : function(choiceId){
-    var choice = QuizRunner.getElementFromListById(EngineNameSpace['listOfChoices'], choiceId);
-    Utils.pushObjectToList('listOfChosenChoices', choice);
+
+  pushChosenChoice: function(choiceId) {
+    var choice = QuizRunner.getElementFromListById(EngineNameSpace.listOfChoices, choiceId);
+    EngineNameSpace.listOfChosenChoices.push(choice);
   },
-  showNextQuestion: function(){
+
+  showNextQuestion: function() {
     if (EngineNameSpace.currentQuestion < EngineNameSpace.listOfQuestions.length) {
       $('.screen').hide();
       $('#quiz-container').show();
       EngineNameSpace.currentQuestion += 1;
-      QuizRunner.fillQuestionContainer((EngineNameSpace.currentQuestion).toString());
-    }
-    else {
+      QuizRunner.fillQuestionContainer(EngineNameSpace.currentQuestion);
+    } else {
       $('.screen').hide();
       QuizRunner.displayResults();
       $('#results-container').show();
     }
   },
-  groupChoicesByQuestionTypes: function(){
-    return _.groupBy(EngineNameSpace.listOfChosenChoices, function(choice){
-      return choice.questionTypeId;
+
+  groupChoicesByQuestionTypes: function() {
+    return _.groupBy(EngineNameSpace.listOfChosenChoices, function(c) {
+      return c.questionTypeId;
     });
   },
-  groupChoicesByAnswers: function(choices){
-    return _.groupBy(choices, function(choice){
-      return choice.answerId;
+
+  groupChoicesByAnswers: function(choices) {
+    return _.groupBy(choices, function(c) {
+      return c.answerId;
     });
   },
-  findMostSuitableAnswer: function(groupByAnswers){
-    var answerCounts = [];
-    _.each(groupByAnswers, function(value, key){
-      var answerData = {'answerId' : key, 'numberOfElements' : value.length};
-      answerCounts.push(answerData);
+
+  findMostSuitableAnswer: function(groupByAnswers) {
+    var counts = _.map(groupByAnswers, function(vals, key) {
+      return { answerId: key, numberOfElements: vals.length };
     });
-    return (_.max(answerCounts, function(answer){ return answer.numberOfElements})).answerId;
+    return _.max(counts, function(a) { return a.numberOfElements; }).answerId;
   },
-  updateRoleOnConfirmationScreen: function(chosenAnswer){
-    if(chosenAnswer.id < 5){
-      $("#role-text").text(chosenAnswer.text);
-    }
-  },
-  displayResults: function(){
-    var groupByQuestionTypes = QuizRunner.groupChoicesByQuestionTypes();
-    _.each(groupByQuestionTypes, function(value, key) {
-      var result = $("<li class='result'></li>");
-      var groupByAnswers = QuizRunner.groupChoicesByAnswers(value);
-      var chosenAnswerId = QuizRunner.findMostSuitableAnswer(groupByAnswers);
-      var chosenAnswer = QuizRunner.getElementFromListById(EngineNameSpace.listOfAnswers, chosenAnswerId);
-      var answerElement = "<span class='answer-text'>" + chosenAnswer.text + "</span>";
-      result.append(answerElement);
-      $("#results-section").append(result);
-      QuizRunner.updateRoleOnConfirmationScreen(chosenAnswer);
+
+  displayResults: function() {
+    var byType = QuizRunner.groupChoicesByQuestionTypes();
+    _.each(byType, function(choices, typeId) {
+      var byAnswer = QuizRunner.groupChoicesByAnswers(choices);
+      var bestAnswerId = QuizRunner.findMostSuitableAnswer(byAnswer);
+      var answer = QuizRunner.getElementFromListById(EngineNameSpace.listOfAnswers, bestAnswerId);
+      $('#results-section').append(
+        $("<li>").addClass('result').html("<span class='answer-text'>" + answer.text + "</span>")
+      );
     });
   },
-  //Added from http://stackoverflow.com/a/2450976
+
   shuffle: function(array) {
-    var currentIndex = array.length, temporaryValue, randomIndex ;
-
-    // While there remain elements to shuffle...
-    while (0 !== currentIndex) {
-
-      // Pick a remaining element...
-      randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex -= 1;
-
-      // And swap it with the current element.
-      temporaryValue = array[currentIndex];
-      array[currentIndex] = array[randomIndex];
-      array[randomIndex] = temporaryValue;
+    var i = array.length, t, j;
+    while (i) {
+      j = Math.floor(Math.random() * i--);
+      t = array[i];
+      array[i] = array[j];
+      array[j] = t;
     }
-
     return array;
   }
 };
